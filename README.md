@@ -1,3 +1,8 @@
+# Contact 
+__Pierre Veron__ 
+
+📧 pierre [dot] veron [dot] 2017 [at] polytechnique [dot] org
+
 # Project 
 This project is the source and code associated with the publication:
 Pierre Veron, Romane Rozanski, Virginie Marques, Stéphane Joost, Marie Emilie Deschez, Verena M. Trenkel, Pascal Lorance, Alice Valentini, Andrea Polanco F., Loïc Pellissier, David Eme and Camille Albouy. _eDNA complements scientific trawling to survey multiple components of marine fish biodiversity_ (Unpublished).
