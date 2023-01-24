@@ -1,6 +1,5 @@
 # Project 
 This project is the source and code associated with the publication:
-
 Pierre Veron, Romane Rozanski, Virginie Marques, Stéphane Joost, Marie Emilie Deschez, Verena M. Trenkel, Pascal Lorance, Alice Valentini, Andrea Polanco F., Loïc Pellissier, David Eme and Camille Albouy. _eDNA complements scientific trawling to survey multiple components of marine fish biodiversity_ (Unpublished).
 
 In this project, we compare two sampling methods for fishes (eDNA and scientific trawling) under the scope of multi-component indices of diversity. The data are taken from the EVHOE 2019 measurement campaign in the Bay of Biscay (Northern Atlantic). We compared eDNA metabarcoding and trawling for assessing:
@@ -28,7 +27,7 @@ renv::restore()
 * `main.R` the main script that calls the other scripts
 * `renv.lock` information on the environments and versions
 * `eDNA_trawling.Rproj` metadata for the project (for RStudio)
-* `renv/` directory loaded by `renv` for restoring the environment (see above)
+* `renv/`:directory loaded by `renv` for restoring the environment (see above)
 * `data/` the data associated with the project:
    * `eDNA_2019_reads.csv` the number of reads from the metabarcoding analysis, per station and taxa,
    * `eDNA_metadata.csv` information about the conditions of sampling for eDNA (position, depth...)
