@@ -29,6 +29,27 @@ renv::restore()
 ```
 
 # Project architecture
+
+```
+├───data
+│   └───icons
+│       └───char
+├───diversity_indices
+├───figures
+├───output
+│   ├───trees
+│   ├───trees_merged
+│   ├───trees_null
+│   └───trees_null_merged
+├───R
+│   ├───functions
+│   │   ├───fonctions_source_f
+│   │   └───fonctions_source_p
+│   ├───graphics
+│   └───process_data
+└───renv
+
+```
 * `main.R` the main script that calls the other scripts
 * `renv.lock` information on the environments and versions
 * `eDNA_trawling.Rproj` metadata for the project (for RStudio)
