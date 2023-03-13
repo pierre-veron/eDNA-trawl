@@ -90,7 +90,7 @@ plot_alpha_div_selected <- function() {
   phyl_tree <- keep.tip(phyl_tree, tip =  detected)
   
   
-
+  
   phyl_symbols_size = sapply(phyl_tree$tip.label, function(lab){
     0.8
   })
@@ -110,7 +110,7 @@ plot_alpha_div_selected <- function() {
   
   
   
-  par(mfrow = c(3,length(selected_sites)), oma = c(0.2,0,0,0))
+  par(mfrow = c(3,length(selected_sites)), oma = c(0.2,1.2,0,0))
   
   # PART 1 : Taxonomic -----------------------------------------------------------
   for (site in selected_sites) {
@@ -120,7 +120,7 @@ plot_alpha_div_selected <- function() {
     Color_taxa <- Color_taxa[which(Color_taxa != color_none)]
     
     Orders <- unique(Reftax[which(Reftax$taxname %in% colnames(Color_taxa)),
-                                  "order"])
+                            "order"])
     ylim <- c(0,27)
     xlim <- c(-6,6)
     plot(c(), c(), xlim = xlim, ylim = ylim, xaxt = 'n', yaxt = 'n', axes = F,
@@ -181,6 +181,7 @@ plot_alpha_div_selected <- function() {
       text(x +2.1, y +4.7, "trawling", col = color_trawl, adj = 0.5, cex = 0.8)
       text(x +2.1, y +2.9, "both", col = "black", adj = 0.5, cex = 0.8)
       text(x +2.1, y +1.1, "none", col = color_none, adj = 0.5, cex = 0.8)
+      mtext("a", side = 2, line = 0)
     }
     
   }
@@ -272,7 +273,7 @@ plot_alpha_div_selected <- function() {
       })
     }
     
-
+    
     # graduation line for clustering signal
     x <- -200
     y <- 130
@@ -295,15 +296,19 @@ plot_alpha_div_selected <- function() {
     triangle_mark(x = x + val_trawl *w, y = y+ 15, width = 60, col = color_trawl, border = color_trawl)
     signif <- if (pval_trawl <0.001) {"***"} else if (pval_trawl < 0.01) {"**"} else if (pval_trawl < 0.05) {"*"} else {""}
     text(x = x + val_trawl *w, y = y + 100, adj = 0.5, labels=  signif, col = color_trawl, cex = 1.4)
+    
+    if (site == selected_sites[1]) {
+      mtext("b", side = 2, line = 0)
+    }
   }
   
   # PART 3 : Functional ----------------------------------------------------------
   dims <- c(1,2)
   xlim <- range(fct_space[, dims[1]])
   ylim <- range(fct_space[, dims[2]])
-
   
-  par(mar = c(0,0.5,0,0.5))
+  
+  par(mar = c(0,0,0,0.5))
   for (site in selected_sites) {
     print(site)
     fct_space$color <- color_none
@@ -348,10 +353,10 @@ plot_alpha_div_selected <- function() {
     
     # first plot undetected points
     df <- fct_space[which(fct_space$color == color_none),]
-
+    
     
     df <- fct_space[which(fct_space$color != color_none),]
-
+    
     text(x = df[, dims[1]], y = df[, dims[2]], adj = 0.5, labels = abb_taxa[rownames(df)], col = df$color, cex = 0.4 )
     dx_ch <- 0
     dy_ch <- 0
@@ -365,6 +370,7 @@ plot_alpha_div_selected <- function() {
     if (site == selected_sites[1]) {
       mtext(colnames(fct_space)[dims[1]], side = 1, outer = FALSE, line = -1.35, cex = 0.6, adj = 0.4)
       mtext(colnames(fct_space)[dims[2]], side = 2, outer = FALSE, line = -1.35, cex = 0.6, adj = 0.92)
+      mtext("c", side = 2, line = 0)
     }
   }
   
