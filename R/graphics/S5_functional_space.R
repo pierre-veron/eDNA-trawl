@@ -8,9 +8,10 @@
 plot_fct_space_by_site <- function() {
   # Load and select one fct space ------------------------------------------------
   fct_space_list <- readRDS("output/fct_space.rds")
-  
+
   i_rand <- 1 # sample(1:length(fct_space_list), size = 1)
   fct_space <- fct_space_list[[i_rand]]
+  colnames(fct_space ) <- gsub("PC","PCoA axis ",colnames(fct_space))
   
   # Parameters -------------------------------------------------------------------
   dims <- c(1,2) # which axis of the fct space to be plotted
