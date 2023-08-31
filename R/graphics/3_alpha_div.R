@@ -17,19 +17,69 @@
 
 
 plot_figure <- function() {
+  
+  # load the SES. of the diversity metrics.
+  Alpha = read.delim("diversity_indices/alpha.csv", sep = ";", h=T)
+  
+  # load the SES. of the diversity metrics.
+  Alpha_SES = read.delim("diversity_indices/alpha_ses.csv", sep = ";", h=T)
+  
+  Alpha$eSR.mean = as.numeric(gsub(",", ".", Alpha$eSR.mean, fixed = T))
+  Alpha$tSR.mean = as.numeric(gsub(",", ".", Alpha$tSR.mean, fixed = T))
+  
+  mean.SR.eDNA = mean(Alpha$eSR.mean)
+  mean.SR.trawl = mean(Alpha$tSR.mean)
+  
+  # remove the comma and convert to numeric
+  Alpha_SES.mat = as.data.frame(do.call(cbind, lapply(1:dim(Alpha_SES[1:13])[2], function(x){
+    as.numeric(gsub(",", ".", Alpha_SES[,x], fixed = T))
+  })))
+  names(Alpha_SES.mat) = names(Alpha_SES)[1:13]
+  Alpha_SES.mat = data.frame(X = Alpha_SES.mat[,1], eSR = Alpha$eSR.mean, Alpha_SES.mat[,2:7], tSR = Alpha$tSR.mean, Alpha_SES.mat[,8:13])
+  
+  mean.ses = apply(Alpha_SES.mat, 2, mean)
+  sd.ses = apply(Alpha_SES.mat, 2, sd)
+  
+  col.e = c(2:8)
+  col.t = c(9:15)
+  metric = gsub("^e", "", names(Alpha_SES.mat)[col.e], perl = T)
+  
+  ## Non paramteric Wilcoxon test with paired test.
+  Wilcox.DF.paired = as.data.frame(do.call(rbind, lapply(1:length(col.e), function(x){
+    a = wilcox.test(Alpha_SES.mat[,col.e[x]], Alpha_SES.mat[,col.t[x]], paired = T)
+    c(a$statistic, round(a$p.value, digits = 4))
+  })))
+  names(Wilcox.DF.paired) = c("Statistic", "p.value")
+  
+  col.e1 = c(2:8)
+  col.t1 = c(9:15)
+  Wilcox.DF.paired = round(data.frame(Wilcox.DF.paired, Mean.ses.eDNA = mean.ses[col.e1], Sd.ses.eDNA = sd.ses[col.e1], Mean.ses.Trawl =  mean.ses[col.t1], Sd.ses.Trawl =  sd.ses[col.t1]), digits = 4)
+  Wilcox.DF.paired = data.frame(Metric = metric, Wilcox.DF.paired)
+  
+  Wilcox.DF.paired
+  
+  A = Wilcox.DF.paired[,c(1,4,5)]
+  B = Wilcox.DF.paired[,c(1,6,7)]
+  names(A) = c("Metric", "Mean", "Sd")
+  names(B) = c("Metric", "Mean", "Sd")
+  
+  
+  DF1 = rbind(A, B)
+  DF1 = data.frame(Method = c(rep("eDNA", 7), rep("Trawling", 7)),  DF1)
+  DF1$Se = DF1$Sd/sqrt(15)
+  # Remove the SR which is not a SES.
+  DF1.SES = DF1[-c(1,8),]
+  
+  DF1.SES$Metric = rep(c("1_PD.ses", "5_VPD.ses", "3_MPD.ses", "2_FD.ses", "6_FEve.ses", "4_FDiv.ses"),2)
+  DF1.SES$Metricnb = rep(c("1", "5", "3", "2", "6", "4"),2)
+  DF1.SES <- DF1.SES[order(DF1.SES$Metricnb),]
+
   # Graphical settings -----------------------------------------------------------
   circle_factor <- 0.25 # size of the pies for median indices 
-  
-  
   
   # PART 1: Alpha indices --------------------------------------------------------
   imgSignif <- list("+" = readPNG(here("data", "icons", "char", "plus.png")),
                     "-" = readPNG(here("data", "icons", "char", "minus.png")))
-  
-  
-  
-  
-  
   
   ## Define points ---------------------------------------------------------------
   Points_edna <- EDNA_metadata[which(EDNA_metadata$replicate == 1), 
@@ -40,7 +90,6 @@ plot_figure <- function() {
   Points_trawl$name <- Name_stations[Points_trawl$station]
   Points_edna <- as.data.frame(Points_edna)
   colnames(Points_trawl) <- c("station", "Latitude", "Longitude", "name")
-  
   
   rownames(Points_trawl) <- Points_trawl$station
   
@@ -53,40 +102,58 @@ plot_figure <- function() {
   
   ## Define indices to plot ------------------------------------------------------
   indices_rich <- c('taxo' = 'sp_richness', # which indices to plot
-                    'func' = 'FD_q0',
-                    'phyl' = 'PD.mean')
+                    'func' = 'FD_q0','phyl' = 'PD.mean')
   
   indices_eve <- c('taxo' = NULL, # which indices to plot
-                   'func' = 'Mean.feve',
-                   'phyl' = 'VPD.mean')
+                   'func' = 'Mean.feve', 'phyl' = 'VPD.mean')
   
   indices_div <- c('taxo' = NULL,
                    'func' = 'Mean.fdiv',
                    'phyl' = 'MPD.mean')
   
-  indices_list <- list("Richness" = indices_rich,
-                       "Regularity" = indices_eve,
-                       "Divergence" = indices_div)
-  indic_names_list <- list("Richness" = c('taxo' = 'SR', # which indices to plot
-                                          'func' = 'FD',
-                                          'phyl' = 'PD'), 
-                           "Regularity" = c('taxo' = '', # which indices to plot
-                                            'func' = 'FEve',
-                                            'phyl' = 'VPD'),
-                           "Divergence" = c('taxo' = '', # which indices to plot
-                                            'func' = 'FDiv',
-                                            'phyl' = 'MPD'))
+  indices_list <- list("Richness" = indices_rich,"Divergence" = indices_div,"Regularity" = indices_eve)
+                       
+  indic_names_list <- list("Richness" = c('taxo' = 'SR','func' = 'FD','phyl' = 'PD'), 
+                           "Divergence" = c('taxo' = '', 'func' = 'FDiv','phyl' = 'MPD'),
+                           "Regularity" = c('taxo' = '','func' = 'FEve', 'phyl' = 'VPD'))
+                                                                           
   
   ## Initiate plot -------------------------------------------------------------
   image_width <- 20
-  image_height <- 8
+  image_height <- 20
   res = 800
   
-  pdf(file = "figures/Fig_3_alpha_div.pdf",
-      width = image_width / 2.54,
-      height = image_height / 2.54)
-  par(mfrow = c(1,3))
-  label_map <- c("a", "b", "c")
+  pdf(file="figures/Fig_3_alpha_div.pdf",width=image_width/2.54,height=image_height/2.54)
+  par(mfrow = c(2,2))
+  
+  par(mar=c(3.2, 3.1, 1.3, 0.15))
+  a <- barplot(DF1.SES$Mean,col=c("#ab3902", "#3E9BFE"),axes=F,lwd=0.3,
+               ylim=c(min(DF1.SES$Mean - DF1.SES$Se)-0.25,max(DF1.SES$Mean + DF1.SES$Se+0.25)))
+  
+  
+  sapply(1:length(a[,1]),function(i){segments(y0=(DF1.SES$Mean - DF1.SES$Se)[i],
+                                              x0=a[i,1],y1=(DF1.SES$Mean + DF1.SES$Se)[i],
+                                              x1=a[i,1],lwd=0.5)})
+  sapply(1:length(a[,1]),function(i){segments(y0=(DF1.SES$Mean - DF1.SES$Se)[i],
+                                              x0=a[i,1]-0.2,y1=(DF1.SES$Mean - DF1.SES$Se)[i],
+                                              x1=a[i,1]+0.2,lwd=0.5)})
+  sapply(1:length(a[,1]),function(i){segments(y0=(DF1.SES$Mean + DF1.SES$Se)[i],
+                                              x0=a[i,1]-0.2,y1=(DF1.SES$Mean + DF1.SES$Se)[i],
+                                              x1=a[i,1]+0.2,lwd=0.5)})
+  axis(side = 2,las=2,cex.axis=0.75,lwd=0.2,mgp=c(0.35,0.45,0),tcl=-0.15)
+  axis(side = 1,las=2, at=c(1.3,3.7,6.1, 8.5, 10.9, 13.3), 
+       label=c('PD.ses', 'FD.ses', 'MPD.ses', 'FDiv.ses', 'VPD.ses', 'FEve.ses'),las=1, 
+       cex.axis=0.7,mgp=c(0.25,0.35,0),lwd=0.2 )
+  abline(h=-1.96,lty=2)
+  legend("bottomright",legend=c("eDNA","Trawling"),pt.cex=1.5,pch=15,
+         col=c("#ab3902", "#3E9BFE"),title="Methods",cex=0.8,box.lwd=0.2)
+  mtext("Biodiversity indices",side = 1,line = 2, at=7.5,cex=0.8)
+  mtext("SES values",side = 2,line = 1.25, at=-0.5,cex=0.8)
+  mtext("a",side=2,line = 1.25, at=1.53,las=2,cex=1)
+  box(lwd=0.2)
+  
+  
+  label_map <- c("b", "c", "d")
   
   ## Draw the 3 panels -------------------------------------------------------
   for (i_panel in 1:3) {
@@ -101,9 +168,6 @@ plot_figure <- function() {
     
     indices <- indices_list[[i_panel]]
     
-    
-    
-    
     # taxo indice
     df_alpha_t <- RESULTS_tax_trawl$Alpha
     rownames(df_alpha_t) <- paste0(rownames(df_alpha_t), "t")
@@ -114,7 +178,6 @@ plot_figure <- function() {
     if (!is.null(indices["taxo"])) {
       df_alpha <- rbind(df_alpha_e, df_alpha_t)
       Points$div_t <- df_alpha[rownames(Points), indices['taxo']]
-      
       
       scale_t <- circle_factor / median(Points$div_t)
       
@@ -150,7 +213,6 @@ plot_figure <- function() {
     df_alpha <- df_alpha[which(rownames(df_alpha) != "total_site"),]
     Points$div_p <- (df_alpha[rownames(Points), indices["phyl"]])
     
-    
     scale_p <- circle_factor / median(Points$div_p)
     
     Points$signif_p <- as.vector(sapply(rownames(Points), function(site) {
@@ -171,8 +233,6 @@ plot_figure <- function() {
     
     pre_map(GISdata = GISdata, xlim = c(-5,0), ylim = c(43,47))
     # plot points 
-    
-    
     
     eps <- 0 # space between pie slices
     dx <- 0.05
@@ -250,8 +310,6 @@ plot_figure <- function() {
                width = 0.15)
       }
       
-      
-      
     }
     
     # Points labels 
@@ -284,7 +342,7 @@ plot_figure <- function() {
     
     ## Legend --------------------------------------------------------------------
     x <- -3.6
-    y <- 43.4
+    y <- 43.9
     rect(x - 1.49,y-1.4,x+0.6, y + 0.85, col = "white")
     
     
@@ -296,7 +354,6 @@ plot_figure <- function() {
               r = 1.7*scale_t * median(Points$div_t),
               col = color,
               angle = angles[c(1,2)])
-    
     
     
     pie_slice(x = x, 
@@ -383,8 +440,7 @@ plot_figure <- function() {
     
     text(x - 1.4,
          y - 1,
-         label = if (i_panel == 1) {"For phylo and functio:
-+ : overdispersed
+         label = if (i_panel == 1) {"+ : overdispersed
 - : clustered"} else {
   "\n+ : overdispersed
 - : clustered"
@@ -392,12 +448,11 @@ plot_figure <- function() {
 cex = 0.8,
 adj = 0)
     
-    post_map(xtickslab = TRUE, ytickslab = (i_panel == 1), cex.axis = 0.85, line.xlab = -0.8)
+    post_map(xtickslab = (i_panel == 3|i_panel == 2), ytickslab = (i_panel == 1 |i_panel == 2), cex.axis = 0.85, line.xlab = -0.8)
     
   }
   
-  
-  
-  dev.off()
+dev.off()
 }
+
 plot_figure()
