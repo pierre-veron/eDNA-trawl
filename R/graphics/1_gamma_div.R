@@ -11,7 +11,7 @@ plot_figure1 <- function() {
   color_sharks <- "#9EE6B2"
   color_actino <- c("#B19206", "#F9DC5C", "#FBEA9D")
   color_holo <- "#877EBB"
-  color_both <- "black"
+  color_both <- "grey26"
   
   pch_edna <- 21
   pch_trawl <- 22
@@ -19,10 +19,9 @@ plot_figure1 <- function() {
   # Prepare map ------------------------------------------------------------------
   Points_edna <- EDNA_metadata[which(EDNA_metadata$replicate == 1), 
                                c("station", "Latitude", "Longitude")]
+  Points_edna$name <- Name_stations[Points_edna$station] 
   
   Points_trawl <- TRAWL_metadata
-  
-  Points_edna$name <- Name_stations[Points_edna$station] 
   Points_trawl$name <- Name_stations[Points_trawl$station]
   
   # Prepare taxo tree ------------------------------------------------------------
@@ -73,7 +72,6 @@ plot_figure1 <- function() {
   df[which(df$det_by == "eDNA"),'color'] <- color_edna
   df[which(df$det_by == "trawl"),'color'] <- color_trawl
   df[which(df$det_by == "both"),'color'] <- color_both
-  
   
   # create tree
   tax_tree <- as.Node(df)
@@ -135,10 +133,7 @@ plot_figure1 <- function() {
   tax_edge_colors[setdiff(edges_eDNA, edges_trawl)] <- color_edna
   tax_edge_colors[setdiff(edges_trawl, edges_eDNA)] <- color_trawl
   
-  
-  
   # Prepare phylo tree -----------------------------------------------------------
-  
   iconic_species <- c("Leucoraja naevus", "Mola mola", "Pleuronectes platessa", 
                       "Engraulis", "Lamna nasus", "Hippocampus hippocampus", "Syngnathus acus",
                       "Capros aper", "Myctophum punctatum", "Trigla lyra", "Chelon ramada", 
@@ -182,13 +177,8 @@ plot_figure1 <- function() {
     label
   })
   
-  phyl_symbols = sapply(phyl_tree$tip.label, function(lab){
-    16
-  })
-  
-  phyl_symbols_size = sapply(phyl_tree$tip.label, function(lab){
-    0.8
-  })
+  phyl_symbols = sapply(phyl_tree$tip.label, function(lab){ 16})
+  phyl_symbols_size = sapply(phyl_tree$tip.label, function(lab){0.8})
   
   edges_eDNA <- get_edges_parent(phyl_tree, which(gsub("_", " ", phyl_tree$tip.label) %in%
                                                     df_ph[which(df_ph$det_by_eDNA), "taxname"]))
@@ -203,6 +193,8 @@ plot_figure1 <- function() {
   path_fct_space <- "output/fct_space.rds"
   
   Fct_space <- as.data.frame(readRDS(path_fct_space)[[4]])
+  colnames(Fct_space) <- gsub("PC","PCoA axis ",colnames(Fct_space))
+  
   Fct_space[df$taxname,"det_by"] <- df$det_by
   
   Fct_space[,1] <- -Fct_space[,1] # just reversing the first axis for nice graph
@@ -215,7 +207,6 @@ plot_figure1 <- function() {
   Fct_space$pch <- 16
   Fct_space$cex <- 0.8
   
-  
   # Plot initialisation ----------------------------------------------------------
   pdf(file = paste0(out_file, ext),
       width = image_width / 2.54,
@@ -224,11 +215,9 @@ plot_figure1 <- function() {
   
   # Map --------------------------------------------------------------------------
   par(mar=c(2,2,1,0.8),mfrow=c(2,2), mgp = c(3,1,0))
-  
-  
-  
+
   plot(0,0, type='n', xaxt='n', yaxt='n', xlab='', ylab='', bty='n')
-  mtext(text="a",side=3,adj = 0, cex = 1.1)
+  mtext(text="a",side=3,adj = 0, cex = 1)
   par(new = "T")
   pre_map(GISdata = GISdata, xlim = c(-6,0), ylim = c(43,48))
   # plot points 
@@ -261,20 +250,19 @@ plot_figure1 <- function() {
          pch = c(pch_edna, pch_trawl), 
          pt.bg = c(color_edna, color_trawl),
          box.lwd = 0.5,
-         cex = 0.95, title = "Sampling point", bg = "white")
+         cex = 0.95, title = "Sampling sites", bg = "white")
   
   # Taxonomic tree ---------------------------------------------------------------
   par(mar=c(2,2,1,0.8), mgp = c(3,1,0))
   
-  
   plot(0,0, type='n', xaxt='n', yaxt='n', xlab='', ylab='', bty='n')
-  mtext(text="b",side=3,adj = 0, cex = 1.1)
+  mtext(text="b",side=3,adj = 0, cex = 1)
   par(new = "T")
-  plot.phylo(tax_tree, type = 'fan', tip.color = tax_colors, show.tip.label = F, no.margin = T,
+  plot.phylo(tax_tree, type = 'fan', tip.color = "white", show.tip.label = F, no.margin = T,
              rotate.tree = 90, x.lim = c(-130,130), y.lim = c(-130,130),
-             edge.color = tax_edge_colors)
-  tiplabels(pch = tax_symbols, col = tax_colors, cex = tax_symbols_size)
-  ring(13, tax_tree, col = tax_ring_col, offset = 15)
+             edge.color = "white")
+  #tiplabels(pch = tax_symbols, col = tax_colors, cex = tax_symbols_size)
+  ring(13, tax_tree, col = tax_colors, offset = 15)
   
   # add images
   images_names <- c("ray" ,"shark", "clupeiformes", "anguilliformes", "gobiiformes",
@@ -282,6 +270,7 @@ plot_figure1 <- function() {
                     "beryciformes", "caproiformes", "perciformes", "myctophiformes",
                     "scorpaeniformes", "mugiliformes", "gadiformes", "moroniformes",
                     "syngnathiformes", "lophiiformes", "carangiformes", "chimaera")
+  
   width <- rep(35, length(images_names))
   delta_radius <- rep(0, length(images_names))
   width[8] <- 25
@@ -297,21 +286,25 @@ plot_figure1 <- function() {
   
   angles <- c(50, 75, 98, 120, 150 ,158, 180, 205, 218, 263, 272, 285, 302,
               314, 338, 3,13.5, 20, 32, 37) #positions of images in degree
-  
+
   sapply(1:length(images_names), function(i) {
-    img <- readPNG(here("data", "icons", paste0(images_names[i], ".png")))
+    #img <- readPNG(here("data", "icons", paste0(images_names[i], ".png")))
+    imgw <- readPNG(here("data", "icons", paste0(images_names[i],"_W", ".png")))
     angle <- pi/180* angles[i]
     r <- (126.5 + delta_radius[i])
-    addImg(img, x = r*cos(angle), y = r*sin(angle), width = width[i], angle = 0)
-  })
+    addImg(imgw, x = r*cos(angle), y = r*sin(angle), width = width[i], angle = 0)
+    #addImg(img, x = r*cos(angle), y = r*sin(angle), width = width[i], angle = 0)
+    
+ })
+     #})
   angle = pi/180*55
-  text(x = 145*cos(angle), y = 145*sin(angle), labels = "Elasmobranchii", col = color_rays,
+  text(x = 145*cos(angle), y = 145*sin(angle), labels = "Elasmobranchii", col = "black",
        cex = 0.75, srt = -30) 
   angle = pi/180*225
-  text(x = 145*cos(angle), y = 145*sin(angle), labels = "Actinopt.", col = color_actino[1],
+  text(x = 145*cos(angle), y = 145*sin(angle), labels = "Actinopt.", col = "black",
        cex = 0.75, srt = -45) 
   angle = pi/180*35
-  text(x = 155*cos(angle), y = 155*sin(angle), labels = "C. monstrosa", col = color_holo,
+  text(x = 155*cos(angle), y = 155*sin(angle), labels = "C. monstrosa", col = "black",
        cex = 0.6, srt = 0, font = 3) 
   # include venn diagram
   #venn <- readPNG(here("figures", "venn_diagram", "manual_venn_diag.png"))
@@ -319,11 +312,10 @@ plot_figure1 <- function() {
   set_trawl <- df[which(df$det_by_trawl), "taxname"]
   par(xpd = NA)
   vd <- my_venn_diag(list(set_edna, set_trawl), colors = c(color_edna, color_trawl), 
-                     size = 3.3, alpha = 0.5, angle = pi/4, 
-                     text.offset = 1.35, x = 118, y = -115, text.cex = 1)
+                     size = 8, alpha = 0.5, angle = pi/4, 
+                     text.offset = 1.1, x = 0, y = 0, text.cex = 1)
   angle <- -pi/4
   par(xpd = F)
-  
   
   
   # Phylogenetic tree ------------------------------------------------------------
@@ -331,7 +323,7 @@ plot_figure1 <- function() {
   
   marg <- 500
   plot(0,0, type='n', xaxt='n', yaxt='n', xlab='', ylab='', bty='n')
-  mtext(text="c",side=3,adj = 0, cex = 1.1)
+  mtext(text="c",side=3,adj = 0, cex = 1)
   par(new = "T")
   age <- max(node.depth.edgelength(phyl_tree))
   
@@ -341,14 +333,12 @@ plot_figure1 <- function() {
              edge.color = NA, plot = F)
   
   scales <- c(50,100,150,200,250,300,350,400)
-  for (s in scales) {
-    draw.circle(x = 0, y = 0, radius =age -  s, border = "gray", lty = 3)
-  }
+  for (s in scales) {draw.circle(x=0,y=0,radius=age- s,border="gray",lty=3)}
   scales <- c(200,300,400)
   for (s in scales) {
     rect(xleft = -35, xright = 35, ybottom = age-s-20, ytop = age-s+20, border = "white",
          col = "white")
-    text(x = 0, y = age - s, labels = paste0(s, " Ma"), col = "gray", cex = 0.4)
+    text(x = 0, y = age - s, labels = paste0(s, " Ma"), col = "black", cex = 0.6)
   }
   par(new = "T")
   plot.phylo(phyl_tree, type = 'fan', tip.color = phyl_colors, show.tip.label = F, no.margin = T,
@@ -376,35 +366,25 @@ plot_figure1 <- function() {
     img <- readPNG(here("data", "icons", paste0(images_names[i], ".png")))
     angle <- pi/180* angles[i]
     r <- (1.05*marg + delta_radius[i])
-    addImg(img, x = r*cos(angle), y = r*sin(angle), width = width[i], angle = 0)
+    addImg(img, x = r*cos(angle), y = r*sin(angle),width=width[i],angle=0)
+    #addImg(1-img, x = r*cos(angle), y = r*sin(angle),width=width[i]+20,angle=0)
   })
-  
-  
-  
-  
   
   # Functional space -------------------------------------------------------------
   par(mar=c(2,2,1,0.8), mgp = c(3,1,0))
   
   plot(0,0, type='n', xaxt='n', yaxt='n', xlab='', ylab='', bty='n')
-  mtext(text="d",side=3,adj = 0, cex = 1.1)
+  mtext(text="d",side=3,adj = 0, cex = 1)
   par(new = "T", mar=c(1.5,1.5,1,0.8) )
   
   # the two following functions aim at encapsulating the functions to plot
-  plot1 <- function(expression) {
-    Hmisc::subplot(expression, 
-                   x = c(-1.1,1.1),
-                   y = c(-1.05,0))
-  }
+  plot1 <- function (expression) { Hmisc::subplot(expression,x=c(-1.1,1.1),
+                   y = c(-1.05,0)) }
   
-  plot2 <- function(expression) {
-    Hmisc::subplot(expression, 
-                   x = c(-1.1,1.1),
-                   y = c(0,1.05))
-  }
-  plot(0,0, xlim = c(-1,1), ylim = c(-1,1), type='n', xaxt='n', yaxt='n', xlab='', ylab='', bty='n')
+  plot2 <- function(expression) { Hmisc::subplot(expression, x = c(-1.1,1.1),
+                   y = c(0,1.05)) }
   
-  
+  plot(0,0, xlim=c(-1,1),ylim=c(-1,1),type='n',xaxt='n',yaxt='n',xlab='',ylab='',bty='n')
   
   to_plot <- function(dm, show.xlab = T, show.legend = F){ # dm : dimensions to plot
     xlim <- c(floor(10*min(Fct_space[, dm[1]]))/10, 0.1 * ceiling(10*max(Fct_space[, dm[1]])))
@@ -435,9 +415,9 @@ plot_figure1 <- function() {
       axis(1, tck = 0.04, labels = F)
     }
     axis(2, tck = 0.04, labels = F)
-    mtext(ylab, side = 2, line = 0.5, cex = 0.8)
+    mtext(ylab, side = 2, line = 0.5, cex = 0.5)
     if (show.xlab) {
-      mtext(xlab, side = 1, line = 0.5, cex = 0.8)
+      mtext(xlab, side = 1, line = 0.5, cex = 0.5)
     }
     polygon(x = ch_edna[,1], y = ch_edna[,2], border = color_edna, 
             col = adjustcolor(color_edna, alpha = 0.3),
@@ -469,13 +449,12 @@ plot_figure1 <- function() {
   }
   plot1(to_plot(c(1,2), show.legend = T))
   plot2(to_plot(c(1,3), show.xlab = F))
-  par(xpd = NA)
+ 
+   par(xpd = NA)
   legend("topleft", legend = c("eDNA", "trawling", "both"), 
-         pch = 16, col = c(color_edna, color_trawl, color_both), cex = 0.8, bg = "white", inset = c(-0.2,-0.1))
+         pch = 16, col = c(color_edna, color_trawl, color_both), cex = 0.8, 
+         bg = "white", inset = c(-0.2,-0.1))
   par(xpd = F)
-  
-  
-  
   
   dev.off()
 }
