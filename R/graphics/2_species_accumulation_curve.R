@@ -77,8 +77,8 @@ plot_SAC <- function() {
   axis(side=2,tcl=-0.4,bg="white", labels=F, line = 0)
   axis(side=2,tick = F,bg="white",labels=T, line = -0.35, las = 1)
   
-  mtext("Number of stations", side = 1, line = 1.8, cex = 1.3)
-  mtext("Species richness", side = 2, line = 1.9, cex = 1.3)
+  mtext("Number of sites", side = 1, line = 1.8, cex = 1.3)
+  mtext("Taxa richness", side = 2, line = 1.9, cex = 1.3)
   dev.off()
   fit.speac
 }
